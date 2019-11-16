@@ -8,7 +8,9 @@ email: "jayb88@gmail.com"
 linkedin: "jacoboblanco"
 date: "`r format(Sys.time(), '%B %Y')`"
 output: vitae::awesomecv
-data_dir: 'data/'
+params:
+  data_dir: "raw-data/"
+  n_roles_include: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -16,39 +18,68 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(lubridate)
 library(vitae)
+library(glue)
 
-data_dir <– params$data_dir
+source("r/formatters.R")
+
+data_dir <- params$data_dir
+n_roles_include <- params$n_roles_include
+skip_roles <- c("Interac")
 ```
+
+```{r}
+work_entries <- read_csv(paste0(data_dir, "work.csv"))
+education_entries <- read_tsv(paste0(data_dir, "education.csv"))
+volunteer_entries <- read_tsv(paste0(data_dir, "volunteer.csv"))
+award_entries <- read_tsv(paste0(data_dir, "awards.csv"))
+```
+
 
 ## Profile
 
-Data scientist with a strong background in real-world data analysis in a variety of contexts. A strong self-learner that quickly leverages new knowledge to tackle complex problems and provide value. Passionate about communicating insights from data analysis to non-technical audiences, and creating tools to make people's work faster and easier. For more detailed information on projects and sample materials please see the LinkedIn profile above.
+Data scientist with a strong background in analytics and modelling, as well as building tools and reports to help people get their job done better based on data. Passionate about communicating insights from data analysis to non-technical audiences and building tools to make people's work faster and easier. I also make really good ice coffee. For more detailed information on projects and sample materials please see the LinkedIn profile above.
 
 ## Work Experience
 
 ```{r}
-read_tsv(paste0(data_dir, paste0(data_dir, "work.csv")) %>%
-  detailed_entries(what = what, when = when, where = where, why = why, with = with)
+work_entries %>%
+  filter(job_id <= n_roles_include) %>%
+  mutate(why = if_else(with %in% skip_roles, NA_character_, why)) %>%
+  detailed_entries(what = what,
+    when = build_date_range(start_date, end_date),
+    where = build_location(city, country), why = why, with = with)
 ```
 
+```{r}
+work_entries %>%
+  filter(job_id > n_roles_include) %>%
+  mutate(why = NaN) %>%
+  detailed_entries(
+    what = what,
+    when = build_date_range(start_date, end_date),
+    where = build_location(city, country),
+    with = with
+  )
+```
+\newpage
 ## Education
 
 ```{r}
-read_tsv(paste0(data_dir, "education.csv") %>%
+education_entries %>%
   detailed_entries(what = what, when = when, where = where, why = why, with = with)
 ```
 
 ## Volunteering
 
 ```{r}
-read_tsv(paste0(data_dir, "volunteer.csv") %>%
+volunteer_entries %>%
   detailed_entries(what = what, when = when, where = where, why = why, with = with)
 ```
 
 ## Awards and Honors
 
 ```{r}
-read_tsv(paste0(data_dir, "awards.csv") %>%
+award_entries %>%
   detailed_entries(what = what, when = when, where = where, why = why, with = with)
 ```
 
@@ -57,7 +88,7 @@ read_tsv(paste0(data_dir, "awards.csv") %>%
 * Languages: R, Python, c++, bash
 * Data visualization and reporting: ggplot2, shiny, plotly, rmarkdown, LaTeX
 * Analysis and Machine learning: outlier detection, clustering, classification
-* Software: git and github, RStudio, Sublime Text
+* Software: Git and GitHub, RStudio, Sublime Text, JIRA, Confluence
 
 ## LANGUAGE SKILLS
 
